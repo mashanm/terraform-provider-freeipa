@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure ScaffoldingProvider satisfies various provider interfaces.
 var _ provider.Provider = &freeipaProvider{}
 
 var _ provider.ProviderWithFunctions = &freeipaProvider{}
@@ -28,7 +27,6 @@ type freeipaProvider struct {
 	version string
 }
 
-// ScaffoldingProviderModel describes the provider data model.
 type freeipaProviderModel struct {
 	Host     types.String `tfsdk:"host"`
 	Username types.String `tfsdk:"username"`

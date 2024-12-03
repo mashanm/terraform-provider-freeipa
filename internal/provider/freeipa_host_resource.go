@@ -47,6 +47,9 @@ func (r *FreeipaHostResource) Schema(ctx context.Context, req resource.SchemaReq
 			"fqdn": schema.StringAttribute{
 				MarkdownDescription: "Fqdn of the host",
 				Required:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"description": schema.StringAttribute{
 				MarkdownDescription: "Description of the host",
@@ -136,10 +139,10 @@ func (r *FreeipaHostResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *FreeipaHostResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data FreeipaHostResourceModel
+	var state FreeipaHostResourceModel
 
 	// Read Terraform prior state data into the model
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -147,35 +150,50 @@ func (r *FreeipaHostResource) Read(ctx context.Context, req resource.ReadRequest
 
 	host, err := r.client.HostShow(
 		&freeipa.HostShowArgs{
-			Fqdn: data.Fqdn.ValueString(),
+			Fqdn: state.Fqdn.ValueString(),
 		}, &freeipa.HostShowOptionalArgs{})
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read %s, got error: %s", data.Fqdn.String(), err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read %s, got error: %s", state.Fqdn.String(), err))
 		return
 	}
 
-	data.Id = types.StringValue(host.Result.Fqdn)
-	data.Fqdn = types.StringValue(host.Result.Fqdn)
+	state.Id = types.StringValue(host.Result.Fqdn)
+	state.Fqdn = types.StringValue(host.Result.Fqdn)
+	state.Description = types.StringValue(*host.Result.Description)
 
 	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *FreeipaHostResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data FreeipaHostResourceModel
+	var plan, state FreeipaHostResourceModel
 
 	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
-	resp.Diagnostics.AddWarning(
-		"Update not supported",
-		"Update is not supported for the freeipa host resource")
+	if state.Description.ValueString() != plan.Description.ValueString() {
+		host, err := r.client.HostMod(
+			&freeipa.HostModArgs{
+				Fqdn: state.Fqdn.ValueString(),
+			}, &freeipa.HostModOptionalArgs{
+				Description: utils.RefString(plan.Description.ValueString()),
+			})
+		if err != nil {
+			resp.Diagnostics.AddWarning("Client Error", fmt.Sprintf("Unable to update %s, got error: %s", plan.Fqdn.String(), err))
+			return
+		}
+		state.Id = types.StringValue(host.Result.Fqdn)
+		state.Fqdn = types.StringValue(host.Result.Fqdn)
+		state.Description = types.StringValue(*host.Result.Description)
+	}
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *FreeipaHostResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
