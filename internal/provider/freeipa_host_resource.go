@@ -211,7 +211,7 @@ func (r *FreeipaHostResource) Delete(ctx context.Context, req resource.DeleteReq
 			Fqdn: []string{data.Fqdn.ValueString()},
 		}, &freeipa.HostDelOptionalArgs{})
 	if err != nil {
-		resp.Diagnostics.AddWarning("Client Error", fmt.Sprintf("Unable to delete %s, got error: %s", data.Fqdn.String(), err))
+		resp.Diagnostics.AddWarning("Client Error", fmt.Sprintf("Unable to delete %s, got error: %s\nSkipping Delete operation in ipa-server and continuing state removal!!", data.Fqdn.String(), err)) // skipping delete operation in ipa-server and continuing state removal
 		return
 	}
 }
