@@ -1,7 +1,9 @@
 terraform {
   required_providers {
     freeipa = {
-      source = "hashicorp.com/mashanm/freeipa"
+      # source = "hashicorp.com/mashanm/freeipa"
+      source = "registry.terraform.io/mashanm/freeipa"
+      version = "0.0.5"
     }
   }
 }
