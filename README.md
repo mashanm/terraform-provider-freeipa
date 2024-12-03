@@ -57,14 +57,14 @@ terraform {
 }
 
 provider "freeipa" {
-  host     = "duba-shp-doma01.corp.trimbletl.com"
+  host     = "duba-shp-doma01.corp.example.com"
   username = "terraform"
   password = "password"
-  realm = "CORP.TRIMBLETL.COM"
+  realm = "corp.example.com"
 }
 
 data "freeipa_host" "example" {
-  fqdn = "duba-nfws-otfa01.corp.trimbletl.com"
+  fqdn = "duba-nfws-otfa01.corp.example.com"
 }
 
 output "fqdn" {

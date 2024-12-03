@@ -18,8 +18,8 @@ func TestAccFreeipaHostDataSource(t *testing.T) {
 			{
 				Config: testAccFreeipaHostDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.freeipa_host.test", "id", "duba-nfws-sgwa01.corp.trimbletl.com"),
-					resource.TestCheckResourceAttr("data.freeipa_host.test", "fqdn", "duba-nfws-sgwa01.corp.trimbletl.com"),
+					resource.TestCheckResourceAttr("data.freeipa_host.test", "id", "duba-nfws-sgwa01.corp.example.com"),
+					resource.TestCheckResourceAttr("data.freeipa_host.test", "fqdn", "duba-nfws-sgwa01.corp.example.com"),
 					resource.TestCheckResourceAttr("data.freeipa_host.test", "hostname", "duba-nfws-sgwa01"),
 				),
 			},
@@ -29,6 +29,6 @@ func TestAccFreeipaHostDataSource(t *testing.T) {
 
 const testAccFreeipaHostDataSourceConfig = `
 data "freeipa_host" "test" {
-  fqdn = "duba-nfws-sgwa01.corp.trimbletl.com"
+  fqdn = "duba-nfws-sgwa01.corp.example.com"
 }
 `

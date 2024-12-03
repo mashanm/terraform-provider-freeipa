@@ -1,3 +1,5 @@
+// Copyright (c) HashiCorp, Inc.
+
 // Description: This file contains the implementation of the FreeipaHostDataSource data source.
 
 package provider

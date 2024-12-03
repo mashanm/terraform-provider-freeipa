@@ -1,15 +1,17 @@
+# Copyright (c) HashiCorp, Inc.
+
 terraform {
   required_providers {
     freeipa = {
-      source = "registry.terraform.io/mashanm/freeipa"
-      version = "0.0.4"
+      source  = "registry.terraform.io/mashanm/freeipa"
+      version = "0.0.6"
     }
   }
 }
 
 provider "freeipa" {
-  host     = "duba-shp-doma01.corp.trimbletl.com"
+  host     = "duba-shp-doma01.corp.example.com"
   username = "terraform"
   password = "password"
-  realm = "CORP.TRIMBLETL.COM"
+  realm    = "corp.example.com"
 }
