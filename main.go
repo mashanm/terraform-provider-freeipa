@@ -1,11 +1,11 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package main
 
 import (
 	"context"
 	"flag"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6to5server"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -27,15 +27,28 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	opts := providerserver.ServeOpts{
-		// TODO: Update this string with the published name of your provider.
-		// Also update the tfplugindocs generate command to either remove the
-		// -provider-name flag or set its value to the updated provider name.
-		Address: "registry.terraform.io/hashicorp/mashanm",
-		Debug:   debug,
+	//opts := providerserver.ServeOpts{
+	//	// TODO: Update this string with the published name of your provider.
+	//	// Also update the tfplugindocs generate command to either remove the
+	//	// -provider-name flag or set its value to the updated provider name.
+	//	Address: "registry.terraform.io/mashanm/freeipa",
+	//	Debug:   debug,
+	//}
+
+	downgradedFrameworkProvider, err := tf6to5server.DowngradeServer(
+		context.Background(),
+		providerserver.NewProtocol6(provider.New(version)()),
+	)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
-	err := providerserver.Serve(context.Background(), provider.New(version), opts)
+	err = tf5server.Serve(
+		"registry.terraform.io/mashanm/freeipa",
+		func() tfprotov5.ProviderServer {
+			return downgradedFrameworkProvider
+		},
+	)
 
 	if err != nil {
 		log.Fatal(err.Error())

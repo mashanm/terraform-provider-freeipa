@@ -1,6 +1,3 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package provider
 
 import (
@@ -12,7 +9,7 @@ import (
 func TestAccFreeipaHostDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			{
@@ -31,4 +28,13 @@ const testAccFreeipaHostDataSourceConfig = `
 data "freeipa_host" "test" {
   fqdn = "duba-nfws-sgwa01.corp.example.com"
 }
+
+provider "freeipa" {
+	host     = "duba-shp-doma01.corp.example.com"
+	username = "terraform"
+	password = "test"
+	realm    = "CORP.EXAMPLE.COM"
+	insecure = true
+}
+
 `
