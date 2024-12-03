@@ -37,6 +37,7 @@ type freeipaProviderModel struct {
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 	Realm    types.String `tfsdk:"realm"`
+	Insecure types.Bool   `tfsdk:"insecure"`
 }
 
 func (p *freeipaProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -62,6 +63,10 @@ func (p *freeipaProvider) Schema(ctx context.Context, req provider.SchemaRequest
 			},
 			"realm": schema.StringAttribute{
 				MarkdownDescription: "The realm to use to authenticate with the FreeIPA master",
+				Required:            true,
+			},
+			"insecure": schema.BoolAttribute{
+				MarkdownDescription: "Whether to skip verification of the FreeIPA master's TLS certificate",
 				Optional:            true,
 			},
 		},
@@ -107,6 +112,10 @@ func (p *freeipaProvider) Configure(ctx context.Context, req provider.ConfigureR
 			"realm is required",
 			"realm is required for the provider to function",
 		)
+	}
+
+	if config.Insecure.IsUnknown() {
+		config.Insecure = types.BoolValue(false)
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -160,7 +169,7 @@ func (p *freeipaProvider) Configure(ctx context.Context, req provider.ConfigureR
 	// Create new freeipa client and set it as the data source and resource data
 	tspt := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true, // WARNING DO NOT USE THIS OPTION IN PRODUCTION
+			InsecureSkipVerify: config.Insecure.ValueBool(),
 		},
 	}
 	client, err := freeipa.Connect(host, tspt, username, password)
