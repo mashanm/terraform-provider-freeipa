@@ -7,9 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -53,17 +51,14 @@ func (r *FreeipaHostResource) Schema(ctx context.Context, req resource.SchemaReq
 			"description": schema.StringAttribute{
 				MarkdownDescription: "Description of the host",
 				Optional:            true,
-				Default:             stringdefault.StaticString(fmt.Sprintf("%s host created by the freeipa provider", "fqdn")),
 			},
 			"force": schema.BoolAttribute{
 				MarkdownDescription: "Force the operation of host creation irrespective of the dns existence",
 				Optional:            true,
-				Default:             booldefault.StaticBool(true),
 			},
 			"noreverse": schema.BoolAttribute{
 				MarkdownDescription: "Do not create reverse DNS record",
 				Optional:            true,
-				Default:             booldefault.StaticBool(true),
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -104,6 +99,19 @@ func (r *FreeipaHostResource) Create(ctx context.Context, req resource.CreateReq
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	if data.Fqdn.IsUnknown() {
+		resp.Diagnostics.AddError("Missing fqdn", "Fqdn is required to create a host")
+	}
+	if data.Force.IsUnknown() {
+		data.Force = types.BoolValue(true) // setting default value as true
+	}
+	if data.NoReverse.IsUnknown() {
+		data.NoReverse = types.BoolValue(true) // setting default value as true
+	}
+	if data.Description.IsUnknown() {
+		data.Description = types.StringValue("") // setting default value as empty string
 	}
 
 	host, err := r.client.HostAdd(&freeipa.HostAddArgs{

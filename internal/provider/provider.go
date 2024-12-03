@@ -182,7 +182,9 @@ func (p *freeipaProvider) Configure(ctx context.Context, req provider.ConfigureR
 }
 
 func (p *freeipaProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		NewFreeipaHostResource,
+	}
 }
 
 func (p *freeipaProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
